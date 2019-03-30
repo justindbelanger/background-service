@@ -8,25 +8,29 @@
 ;; block until message is received
 ;; echo the message
 ;; exit
+
+(def port 2019)
+
 (defn -main []
-  (let [server (ServerSocket. 2019) ;; TODO move Java stuff into a little library
-        client (.accept server) ;; this blocks until a connection is made
-        output (-> client
-                   .getOutputStream
-                   (PrintWriter. true))
-        input (-> client
-                  .getInputStream
-                  InputStreamReader.
-                  BufferedReader.)]
+  (let [server (ServerSocket. port)]
     (println "Echo service started...")
-    (loop []
+    (let [client (.accept server) ;; this blocks until a connection is made
+          autoflush true
+          output (-> client
+                     .getOutputStream
+                     (PrintWriter. autoflush))
+          input (-> client
+                    .getInputStream
+                    InputStreamReader.
+                    BufferedReader.)]
+      (loop []
         (let [message (.readLine input)]
           (println message)
           (if message
             (do (thread
                   (.println output "Processing...")
-                  (Thread/sleep 10000)
-                  (.println output (-> message
-                                       reverse
-                                       str)))
-                (recur)))))))
+                  (Thread/sleep 5000)
+                  (.println output (->> message
+                                        reverse
+                                        (apply str))))
+                (recur))))))))
