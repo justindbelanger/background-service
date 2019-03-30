@@ -1,0 +1,9 @@
+* TODO move Java-specific stuff into a separate namespace
+Wrap the classes with idiomatic Clojure
+Mad scientist goal: write the main functionality in CLJC and wrap JavaScript and Java integrations, so the service can run in either environment!
+* TODO Support multiple clients
+Just need to spawn a new thread or something similar, so each client can have a concurrent conversation.
+* TODO launch the service in the background
+The expected use case is to run the service as a daemon/background service, so the main program should spawn this and end the main thread.
+* TODO live repl support
+Spawn a REPL inside the running service and allow clients, e.g. CIDER, to connect and inspect the current state

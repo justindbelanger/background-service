@@ -1,0 +1,21 @@
+* Background Service (BgS)
+This is just a little research prototype, exploring the advantages of writing long-lived background services/daemons in Clojure.
+* Motivation
+I want to answer some questions with this project.
+1. In general, how do we write long-lived services?
+2. Another question I'd like to answer is, how do we make such services extremely /reliable/ in /when/ they perform their behaviour? Examples are services for notifications and billing. Perhaps even real-time automation services fit in this category.
+3. More specifically, can Clojure make this more feasible and attainable for real-world development?
+* Running
+In one terminal session, just use 
+#+BEGIN_SRC sh
+clj -m background-service.core
+#+END_SRC
+ to start the server.
+Then, in another terminal session, use 
+#+BEGIN_SRC sh
+telnet localhost 2019
+#+END_SRC
+ to connect. (Yes, the port is hard-coded for now.)
+Once connected, any text you send to the server is echoed back after a few seconds.
+* Contributing
+Pull requests, constructive critique, and discussion are all welcome!
