@@ -14,23 +14,28 @@
 (defn -main []
   (let [server (ServerSocket. port)]
     (println "Echo service started...")
-    (let [client (.accept server) ;; this blocks until a connection is made
-          autoflush true
-          output (-> client
-                     .getOutputStream
-                     (PrintWriter. autoflush))
-          input (-> client
-                    .getInputStream
-                    InputStreamReader.
-                    BufferedReader.)]
-      (loop []
-        (let [message (.readLine input)]
-          (println message)
-          (if message
-            (do (thread
-                  (.println output "Processing...")
-                  (Thread/sleep 5000)
-                  (.println output (->> message
-                                        reverse
-                                        (apply str))))
-                (recur))))))))
+    ;; accept blocks until a connection is made
+    (loop []
+      (let [client (.accept server)]
+        (println "Client connected...")
+        (thread
+          (let [autoflush true
+                output (-> client
+                           .getOutputStream
+                           (PrintWriter. autoflush))
+                input (-> client
+                          .getInputStream
+                          InputStreamReader.
+                          BufferedReader.)]
+            (loop []
+              (let [message (.readLine input)]
+                (println (str "Client sent: " message))
+                (if message
+                  (do (thread
+                        (.println output "Processing...")
+                        (Thread/sleep 5000)
+                        (.println output (->> message
+                                              reverse
+                                              (apply str))))
+                      (recur))))))))
+      (recur))))
