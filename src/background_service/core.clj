@@ -1,14 +1,10 @@
 (ns background-service.core
-  (:require [clojure.core.async :refer [<!! >!! chan go-loop <! >! thread]])
-  (:import [java.net ServerSocket Socket]
+  (:require [clojure.core.async :refer [pipe <!! >!! chan go-loop <! >! thread]])
+  (:import [java.net ServerSocket]
            [java.io BufferedReader PrintWriter InputStreamReader]))
 
-;; TODO make this an interface that is implemented in CLJ and in CLJS
-(defn server-socket [port]
-  (ServerSocket. port))
-
 (defn client-chan [port]
-  (let [server (server-socket port)
+  (let [server (ServerSocket. port)
         c-chan (chan)]
     (println "Echo service started...")
     (go-loop []
@@ -19,17 +15,17 @@
     c-chan))
 
 (defn request-chan [client]
-  (let [r-chan (chan)]
+  (let [autoflush true
+        output (-> client
+                   .getOutputStream
+                   (PrintWriter. autoflush))
+        input (-> client
+                  .getInputStream
+                  InputStreamReader.
+                  BufferedReader.)
+        r-chan (chan)]
     (go-loop []
-      (let [autoflush true
-            output (-> client
-                       .getOutputStream
-                       (PrintWriter. autoflush))
-            input (-> client
-                      .getInputStream
-                      InputStreamReader.
-                      BufferedReader.)
-            request (.readLine input)]
+      (let [request (.readLine input)]
         (println "Client sent: " request)
         (>! r-chan {:request request
                     :output (fn [o] (.println output o))}))
@@ -41,7 +37,7 @@
     (go-loop []
       (let [client (<! clients)
             req-chan (request-chan client)]
-        (>! r-chan (<! req-chan)))
+        (pipe req-chan r-chan))
       (recur))
     r-chan))
 
